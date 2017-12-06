@@ -8,20 +8,22 @@
  * Copyright (c) 2017 alextanhongpin. All rights reserved.
 **/
 
-function baseErrorHandler (res) {
+function baseErrorHandler (ctx) {
   return function (error) {
-    return res.status(400).json({
+    ctx.status = 400
+    ctx.body = {
       error: error.message,
       code: error.code
-    })
+    }
   }
 }
 
-function baseSuccessHandler (res) {
+function baseSuccessHandler (ctx) {
   return function (body) {
-    return res.status(200).json({
-      data: body
-    })
+    ctx.status = 200
+    ctx.body = {
+      data: bodys
+    }
   }
 }
 

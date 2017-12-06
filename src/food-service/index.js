@@ -11,11 +11,12 @@
 import FoodStore from './store'
 import FoodModel from './model'
 import FoodRoute from './route'
-
-import express from 'express'
-const router = express.Router()
+import Router from 'koa-router'
 
 const FoodService = ({ db, schema }) => {
+  const router = new Router({
+    prefix: '/foods'
+  })
   const model = FoodModel({
     store: FoodStore(db),
     schema
@@ -23,7 +24,7 @@ const FoodService = ({ db, schema }) => {
   const route = FoodRoute(model)
 
   router
-  .use(route.featureToggle)
+  // .use(route.featureToggle)
   .get('/', route.getFoods)
   .get('/:id', route.getFood)
   .post('/', route.postFood)

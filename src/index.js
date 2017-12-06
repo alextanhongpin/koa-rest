@@ -8,9 +8,10 @@
  * Copyright (c) 2017 alextanhongpin. All rights reserved.
 **/
 
-import express from 'express'
-import bodyParser from 'body-parser'
-import path as 'path'
+import Koa from 'koa'
+import bodyParser from 'koa-bodyparser'
+import serve from 'koa-static'
+import Router from 'koa-router'
 
 import config from './config'
 import DB from './database'
@@ -18,10 +19,14 @@ import Schema from './schema'
 import FoodService from './food-service'
 
 async function main () {
-  const app = express()
-  app.use(bodyParser.urlencoded({ extended: false }))
-  app.use(bodyParser.json())
-  app.use('/schemas', express.static(path.join(__dirname, 'schema')))
+  const app = new Koa()
+  const router = new Router({
+    prefix: '/schemas'
+  })
+  router.get('/', serve(__dirname + '/schema'))
+  app.use(bodyParser())
+  app.use(router.routes())
+  app.use(router.allowedMethods())
 
   const db = await DB.connect(config.get('db'))
   const schema = Schema()
@@ -32,14 +37,18 @@ async function main () {
 
   // Initialize service by looping through them
   services.forEach((service) => {
-    app.use(service.basePath, service.route)
+    // app.use(service.basePath, service.route)
+    app
+    .use(service.route.routes())
+    .use(service.route.allowedMethods())
   })
 
-  app.get('/', async (req, res) => {
-    res.status(200).json({
+  app.use(async (ctx, next) => {
+    ctx.status = 200
+    ctx.body = {
       endpoints: services.map((service) => service.info),
       routes: app.routes
-    })
+    }
   })
 
   // This is a naive example, but you can create an endpoint to toggle the services (on/off)

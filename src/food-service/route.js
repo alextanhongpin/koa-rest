@@ -15,49 +15,50 @@ import { baseErrorHandler, baseSuccessHandler } from '../helper'
 export default (model) => {
   // GET /foods/:id
   // Description: Get food by id
-  async function getFood (req, res) {
+  async function getFood (ctx, next) {
     try {
       const request = {
-        id: req.params.id
+        id: ctx.params.id
       }
       const result = await model.one(request)
-      baseSuccessHandler(res)(result)
+      baseSuccessHandler(ctx)(result)
     } catch (error) {
-      baseErrorHandler(res)(error)
+      baseErrorHandler(ctx)(error)
     }
   }
 
   // GET /foods
   // Description: Get an array of foods
-  async function getFoods (req, res) {
+  async function getFoods (ctx, next) {
     try {
       const result = await model.all()
-      return baseSuccessHandler(res)(result)
+      return baseSuccessHandler(ctx)(result)
     } catch (error) {
-      return baseErrorHandler(res)(error)
+      return baseErrorHandler(ctx)(error)
     }
   }
 
   // POST /foods
   // Description: Create a new food, with id and name as body
-  async function postFood (req, res) {
+  async function postFood (ctx, next) {
     try {
-      const result = await model.create(req.body)
+      const result = await model.create(ctx.request.body)
       console.log('foods', result)
-      return baseSuccessHandler(res)(result)
+      return baseSuccessHandler(ctx)(result)
     } catch (error) {
-      return baseErrorHandler(res)(error)
+      return baseErrorHandler(ctx)(error)
     }
   }
 
-  async function featureToggle (req, res, next) {
+  async function featureToggle (ctx, next) {
     if (config.get('service.food')) {
       return next()
     }
-    return res.status(404).json({
+    ctx.status = 404
+    ctx.body = {
       error: 'The endpoint is not implemented',
       code: 404
-    })
+    }
   }
 
   return {
